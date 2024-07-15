@@ -13,11 +13,20 @@
     - ansible_facts.distribution | lower == 'debian'
     - ansible_facts.distribution_major_version >= '12'
 
-- name: enable systemd-networkd
-  become: true
-  service:
-    name: systemd-networkd
-    enabled: yes
+- block:
+  # TODO(mattcrees): Remove once this gets into a versioned release:
+  # https://github.com/ansible/ansible/pull/77754
+  - name: Temporarily disable systemd-networkd
+    become: true
+    service:
+      name: systemd-networkd
+      enabled: no
+
+  - name: enable systemd-networkd
+    become: true
+    service:
+      name: systemd-networkd
+      enabled: yes
   when: systemd_networkd_network or systemd_networkd_link or systemd_networkd_netdev
 
 - name: start and enable systemd-resolved
